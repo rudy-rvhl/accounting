@@ -1,0 +1,12 @@
+# Core runtime dependencies (see pyproject.toml for the authoritative list).
+# Install the package itself with:  pip install -e ".[pdf,dev]"
+pydantic>=2.5
+fastapi>=0.110
+uvicorn[standard]>=0.27
+jinja2>=3.1
+python-multipart>=0.0.9
+sqlalchemy>=2.0
+typer>=0.12
+# Optional:
+#   weasyprint>=60   # PDF export  (pip install -e ".[pdf]")
+#   pytest>=8.0      # tests        (pip install -e ".[dev]")

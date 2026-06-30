@@ -140,6 +140,15 @@ def advisory(request: Request):
         request, active="advisory", advisory=items))
 
 
+@app.get("/forecast", response_class=HTMLResponse)
+def forecast_page(request: Request, years: int = 5):
+    from qcre.cfo.forecast import ForecastAssumptions, forecast
+    co = get_company()
+    res = forecast(co, ForecastAssumptions(years=max(1, min(years, 15))))
+    return TEMPLATES.TemplateResponse(request, "forecast.html", ctx(
+        request, active="forecast", result=res, rows=res.rows))
+
+
 @app.get("/planner", response_class=HTMLResponse)
 def planner(request: Request):
     return TEMPLATES.TemplateResponse(request, "planner.html", ctx(request, active="planner"))

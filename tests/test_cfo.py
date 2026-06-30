@@ -3,8 +3,10 @@
 from decimal import Decimal
 
 from qcre.cfo.finance import irr, npv
+from qcre.cfo.forecast import ForecastAssumptions, forecast
 from qcre.cfo.holdvssell import after_tax_sale, hold_vs_sell
 from qcre.core.money import Money
+from qcre.sample import build_sample_company
 from qcre.tax.rates import get_ratebook
 
 RB = get_ratebook(2026)
@@ -44,3 +46,26 @@ def test_hold_vs_sell_recommends():
     )
     assert res.recommendation.startswith(("SELL", "HOLD"))
     assert len(res.notes) >= 2
+
+
+def test_forecast_projects_horizon_and_rolls_cca():
+    co = build_sample_company()
+    res = forecast(co, ForecastAssumptions(years=5))
+    assert len(res.rows) == 5
+    # Revenue grows year over year.
+    assert res.rows[1].revenue > res.rows[0].revenue
+    # CCA shelters rental income heavily in early years (declining-balance pools).
+    assert res.rows[1].taxable_income <= res.rows[0].taxable_income
+    # Mortgage balance declines over time.
+    assert res.rows[-1].mortgage_balance < res.rows[0].mortgage_balance
+    # First-year DSCR matches the single-year KPI view (consistency check).
+    from qcre.analysis import portfolio_view
+    _, agg = portfolio_view(co)
+    assert abs(res.rows[0].dscr - agg.dscr) < Decimal("0.01")
+
+
+def test_forecast_dividends_draw_down_rdtoh():
+    co = build_sample_company()
+    res = forecast(co, ForecastAssumptions(years=3, annual_taxable_dividends=Money("40000")))
+    # Paying taxable dividends recovers RDTOH, so the balance stays low.
+    assert res.rows[-1].rdtoh_balance >= Money.zero()

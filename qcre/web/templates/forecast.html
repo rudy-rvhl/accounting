@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Multi-Year Forecast{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-1">
+  <h1 class="text-lg font-semibold">Multi-Year Forecast</h1>
+  <div class="text-sm">
+    {% for y in [3,5,10] %}
+      <a href="/forecast?years={{ y }}" class="ml-3 text-teal-700 hover:underline">{{ y }} yrs</a>
+    {% endfor %}
+  </div>
+</div>
+<p class="text-sm text-slate-500 mb-5">
+  Rent growth {{ result.assumptions.rent_growth|pct }}, expense growth {{ result.assumptions.expense_growth|pct }},
+  discount rate {{ result.assumptions.discount_rate|pct }}. CCA pools roll forward; corporate tax recomputed each year.
+</p>
+
+<div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
+      <tr>
+        <th class="text-left px-4 py-2">Year</th>
+        <th class="text-right px-3">Revenue</th><th class="text-right px-3">NOI</th>
+        <th class="text-right px-3">Interest</th><th class="text-right px-3">CCA</th>
+        <th class="text-right px-3">Taxable</th><th class="text-right px-3">Corp tax</th>
+        <th class="text-right px-3">RDTOH</th><th class="text-right px-3">DSCR</th>
+        <th class="text-right px-4">After-tax CF</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr class="border-t border-slate-100">
+        <td class="px-4 py-2 font-medium">{{ r.year }}</td>
+        <td class="text-right px-3 tnum">{{ r.revenue|money }}</td>
+        <td class="text-right px-3 tnum">{{ r.noi|money }}</td>
+        <td class="text-right px-3 tnum">{{ r.mortgage_interest|money }}</td>
+        <td class="text-right px-3 tnum">{{ r.cca|money }}</td>
+        <td class="text-right px-3 tnum">{{ r.taxable_income|money }}</td>
+        <td class="text-right px-3 tnum">{{ r.corporate_tax|money }}</td>
+        <td class="text-right px-3 tnum">{{ r.rdtoh_balance|money }}</td>
+        <td class="text-right px-3 tnum">{{ '%.2fx'|format(r.dscr) }}</td>
+        <td class="text-right px-4 tnum">{{ r.after_tax_cash_flow|money }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="mt-4 bg-teal-50 text-teal-800 rounded-xl px-5 py-3 text-sm">
+  Present value of projected after-tax cash flows: <strong>{{ result.pv_after_tax_cash_flow|money }}</strong>.
+  Note how capital cost allowance shelters rental income (often to nil) in the early years, deferring corporate tax.
+</div>
+{% endblock %}

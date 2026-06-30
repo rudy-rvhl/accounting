@@ -163,6 +163,34 @@ def advisory(db: str = typer.Option(None, help="Company database (defaults to de
     typer.echo("\n" + typer.style(DISCLAIMER, dim=True))
 
 
+@app.command()
+def forecast(
+    db: str = typer.Option(None, help="Company database (defaults to demo)"),
+    years: int = typer.Option(5, help="Forecast horizon in years"),
+    rent_growth: float = typer.Option(0.025, help="Annual rent growth"),
+    expense_growth: float = typer.Option(0.03, help="Annual expense growth"),
+) -> None:
+    """Project NOI, tax, CCA, RDTOH and cash flow over a multi-year horizon."""
+    from decimal import Decimal as D
+
+    from qcre.cfo.forecast import ForecastAssumptions, forecast as run
+
+    co = _load(db)
+    res = run(co, ForecastAssumptions(
+        years=years, rent_growth=D(str(rent_growth)), expense_growth=D(str(expense_growth))))
+    _hr(f"{years}-Year Forecast — {co.entity_name}")
+    hdr = ["Year", "Revenue", "NOI", "Interest", "CCA", "Taxable", "Corp tax", "RDTOH", "DSCR", "After-tax CF"]
+    typer.echo("".join(h.rjust(13) for h in hdr))
+    for r in res.rows:
+        cells = [str(r.year), r.revenue.format(), r.noi.format(), r.mortgage_interest.format(),
+                 r.cca.format(), r.taxable_income.format(), r.corporate_tax.format(),
+                 r.rdtoh_balance.format(), f"{r.dscr:.2f}x", r.after_tax_cash_flow.format()]
+        typer.echo("".join(c.rjust(13) for c in cells))
+    typer.echo(f"\nPV of after-tax cash flow @ {res.assumptions.discount_rate*100:.0f}%: "
+               f"{res.pv_after_tax_cash_flow.format()}")
+    typer.echo("\n" + typer.style(DISCLAIMER, dim=True))
+
+
 @app.command(name="transfer-duty")
 def transfer_duty(
     amount: float = typer.Argument(..., help="Taxable basis (price or assessment)"),

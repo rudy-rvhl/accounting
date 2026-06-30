@@ -76,7 +76,8 @@ class Mortgage:
             else:
                 pmt_actual = pmt
             balance = (balance - principal).round(2)
-            month = self.start_date.month - 1 + p * months_step
+            # Payment p=1 falls in the start month, so a full calendar year has 12 payments.
+            month = self.start_date.month - 1 + (p - 1) * months_step
             year = self.start_date.year + month // 12
             pay_date = date(year, month % 12 + 1, 1)
             rows.append(AmortizationRow(p, pay_date, pmt_actual, interest, principal, balance))

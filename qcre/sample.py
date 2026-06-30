@@ -10,10 +10,10 @@ with, and the books balance by construction.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 from datetime import date
 from decimal import Decimal
 
+from qcre.company import Company, SampleCompany
 from qcre.core import FiscalYear, Ledger, Money, default_chart
 from qcre.domain.events import Acc, EventBuilder
 from qcre.domain.mortgage import Mortgage
@@ -21,21 +21,6 @@ from qcre.domain.property import Property, RentalUnit, UnitKind
 from qcre.reports.framework import Framework
 from qcre.tax.rates import get_ratebook
 from qcre.tax.transfer_duty import TransferDutyEngine
-
-
-@dataclass
-class SampleCompany:
-    entity_name: str
-    ledger: Ledger
-    properties: list[Property]
-    mortgages: list[Mortgage]
-    fiscal_year: FiscalYear
-    framework: Framework
-    trust_created: date
-    full_time_employees: int
-    quebec_paid_hours: Decimal
-    year: int = 2026
-    metadata: dict = field(default_factory=dict)
 
 
 def _residential_sixplex() -> Property:
@@ -67,7 +52,7 @@ def _mixed_use() -> Property:
     )
 
 
-def build_sample_company(framework: Framework = Framework.ASPE) -> SampleCompany:
+def build_sample_company(framework: Framework = Framework.ASPE) -> Company:
     rb = get_ratebook(2026)
     coa = default_chart()
     ledger = Ledger(coa)
@@ -163,7 +148,7 @@ def build_sample_company(framework: Framework = Framework.ASPE) -> SampleCompany
         ],
     ))
 
-    return SampleCompany(
+    return Company(
         entity_name="Gestion Immobilière Lellouche Inc.",
         ledger=ledger, properties=properties, mortgages=mortgages,
         fiscal_year=fy, framework=framework,

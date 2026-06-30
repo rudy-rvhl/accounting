@@ -1,0 +1,13 @@
+<div class="border border-slate-200 rounded-lg p-4 bg-slate-50">
+  <div class="text-sm text-slate-500">{{ res.municipality }}</div>
+  {% if res.exempt %}
+    <div class="text-teal-700 font-semibold mt-1">Exempt — no transfer duty payable.</div>
+  {% else %}
+    <table class="w-full text-sm mt-2">
+      {% for label, amt in res.detail %}
+      <tr><td class="py-0.5 text-slate-600">{{ label }}</td><td class="text-right tnum">{{ amt.format() }}</td></tr>
+      {% endfor %}
+      <tr class="border-t border-slate-300 font-semibold"><td class="py-1">Total duty</td><td class="text-right tnum">{{ res.duty.format() }}</td></tr>
+    </table>
+  {% endif %}
+</div>

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}General Ledger{% endblock %}
+{% block content %}
+<h1 class="text-lg font-semibold mb-5">General Ledger</h1>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <!-- Trial balance -->
+  <div class="bg-white rounded-xl border border-slate-200 p-6">
+    <div class="font-semibold mb-3">Trial balance — as at {{ company.fiscal_year.end.isoformat() }}</div>
+    <table class="w-full text-sm">
+      <thead class="text-slate-500 text-xs uppercase">
+        <tr><th class="text-left">Account</th><th class="text-right">Debit</th><th class="text-right">Credit</th></tr>
+      </thead>
+      <tbody>
+        {% for row in trial_balance %}
+        <tr class="border-t border-slate-100">
+          <td class="py-1">{{ row.code }} · {{ row.name }}</td>
+          <td class="text-right tnum">{{ row.debit|money if not row.debit.is_zero() else '' }}</td>
+          <td class="text-right tnum">{{ row.credit|money if not row.credit.is_zero() else '' }}</td>
+        </tr>
+        {% endfor %}
+        <tr class="border-t-2 border-slate-800 font-semibold">
+          <td class="py-1">Totals</td>
+          <td class="text-right tnum">{{ tb_debits|money }}</td>
+          <td class="text-right tnum">{{ tb_credits|money }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Journal -->
+  <div class="bg-white rounded-xl border border-slate-200 p-6">
+    <div class="font-semibold mb-3">Journal ({{ entries|length }} entries)</div>
+    <div class="max-h-[70vh] overflow-auto">
+      {% for e in entries %}
+      <div class="border-b border-slate-100 py-2">
+        <div class="flex justify-between text-xs text-slate-500">
+          <span>{{ e.date.isoformat() }} · {{ e.source }}{% if e.property_id %} · {{ e.property_id }}{% endif %}</span>
+        </div>
+        <div class="text-sm font-medium">{{ e.description }}</div>
+        <table class="w-full text-xs mt-1">
+          {% for ln in e.lines %}
+          <tr>
+            <td class="text-slate-600" style="padding-left: {{ 0 if ln.debit.is_positive() else 16 }}px">
+              {{ ln.account_code }} {{ chart.get(ln.account_code).name }}
+            </td>
+            <td class="text-right tnum">{{ ln.debit|money if ln.debit.is_positive() else '' }}</td>
+            <td class="text-right tnum">{{ ln.credit|money if ln.credit.is_positive() else '' }}</td>
+          </tr>
+          {% endfor %}
+        </table>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+
+{% macro stat(label, value, sub='') %}
+<div class="bg-white rounded-xl border border-slate-200 p-4">
+  <div class="text-xs text-slate-500">{{ label }}</div>
+  <div class="text-2xl font-semibold tnum mt-1">{{ value }}</div>
+  {% if sub %}<div class="text-xs text-slate-400 mt-1">{{ sub }}</div>{% endif %}
+</div>
+{% endmacro %}
+
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+  {{ stat('Portfolio NOI', portfolio.noi|money if portfolio else '—') }}
+  {{ stat('Cap rate', portfolio.cap_rate|pct if portfolio else '—', 'NOI / market value') }}
+  {{ stat('DSCR', '%.2fx'|format(portfolio.dscr) if portfolio else '—', 'debt-service coverage') }}
+  {{ stat('Pre-tax cash flow', portfolio.pre_tax_cash_flow|money if portfolio else '—') }}
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+  <!-- Tax snapshot -->
+  <div class="bg-white rounded-xl border border-slate-200 p-5 lg:col-span-1">
+    <div class="font-semibold mb-3">Corporate tax snapshot</div>
+    <dl class="text-sm space-y-1.5">
+      <div class="flex justify-between"><dt class="text-slate-500">Taxable rental income</dt><dd class="tnum">{{ pos.taxable_rental_income|money }}</dd></div>
+      <div class="flex justify-between"><dt class="text-slate-500">CCA claimed</dt><dd class="tnum">{{ pos.cca_claimed|money }}</dd></div>
+      <div class="flex justify-between"><dt class="text-slate-500">Income type</dt>
+        <dd>{% if corporate is defined %}{% endif %}{{ 'Investment (SIB)' if pos.corporate.rental_is_sib else 'Active business' }}</dd></div>
+      <div class="flex justify-between font-semibold border-t border-slate-200 pt-1.5"><dt>Total corporate tax</dt><dd class="tnum">{{ pos.corporate.total_tax|money }}</dd></div>
+      <div class="flex justify-between"><dt class="text-slate-500">→ Refundable (RDTOH)</dt><dd class="tnum">{{ pos.corporate.refundable_tax_added_to_rdtoh|money }}</dd></div>
+    </dl>
+    <a href="/tax" class="inline-block mt-4 text-sm text-teal-700 hover:underline">Full tax position →</a>
+  </div>
+
+  <!-- Advisory -->
+  <div class="bg-white rounded-xl border border-slate-200 p-5 lg:col-span-2">
+    <div class="flex items-center justify-between mb-3">
+      <div class="font-semibold">CFO advisory</div>
+      <a href="/advisory" class="text-sm text-teal-700 hover:underline">{{ advisory_count }} items →</a>
+    </div>
+    <div class="space-y-2">
+      {% for it in advisory %}
+      {% set colors = {'critical':'border-red-500','warning':'border-amber-500','opportunity':'border-teal-500','info':'border-slate-400'} %}
+      <div class="border-l-4 {{ colors[it.severity.value] }} bg-slate-50 rounded-r-lg px-3 py-2">
+        <div class="text-[10px] uppercase tracking-wide text-slate-500">{{ it.severity.value }} · {{ it.category }}</div>
+        <div class="text-sm font-medium">{{ it.title }}</div>
+        {% if it.impact %}<div class="text-xs text-slate-600">Impact: <span class="font-semibold">{{ it.impact|money }}</span></div>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Properties -->
+<div class="bg-white rounded-xl border border-slate-200 mt-6 overflow-hidden">
+  <div class="px-5 py-3 font-semibold border-b border-slate-200">Portfolio</div>
+  <table class="w-full text-sm">
+    <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
+      <tr><th class="text-left px-5 py-2">Property</th><th class="text-right px-3">NOI</th>
+      <th class="text-right px-3">Cap rate</th><th class="text-right px-3">DSCR</th>
+      <th class="text-right px-3">LTV</th><th class="text-right px-5">Value</th></tr>
+    </thead>
+    <tbody>
+      {% for prop, k in per %}
+      <tr class="border-t border-slate-100">
+        <td class="px-5 py-2">{{ prop.name }}</td>
+        <td class="text-right px-3 tnum">{{ k.noi|money }}</td>
+        <td class="text-right px-3 tnum">{{ k.cap_rate|pct }}</td>
+        <td class="text-right px-3 tnum">{{ '%.2fx'|format(k.dscr) }}</td>
+        <td class="text-right px-3 tnum">{{ k.ltv|pct }}</td>
+        <td class="text-right px-5 tnum">{{ k.market_value|money }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Tax Position{% endblock %}
+{% block content %}
+<h1 class="text-lg font-semibold mb-5">Corporate Tax Position — {{ year }}</h1>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <div class="bg-white rounded-xl border border-slate-200 p-6">
+    <div class="font-semibold mb-3">From NOI to taxable income</div>
+    <table class="w-full text-sm">
+      <tr><td class="py-1">Net operating income (NOI)</td><td class="text-right tnum">{{ pos.noi|money }}</td></tr>
+      <tr><td class="py-1">Less: mortgage interest</td><td class="text-right tnum text-red-700">{{ (-pos.mortgage_interest)|money }}</td></tr>
+      <tr class="border-t border-slate-200"><td class="py-1">Rental income before CCA</td><td class="text-right tnum">{{ pos.rental_income_before_cca|money }}</td></tr>
+      <tr><td class="py-1">Less: capital cost allowance</td><td class="text-right tnum text-red-700">{{ (-pos.cca_claimed)|money }}</td></tr>
+      <tr class="border-t border-slate-800 font-semibold"><td class="py-1">Taxable rental income</td><td class="text-right tnum">{{ pos.taxable_rental_income|money }}</td></tr>
+    </table>
+    <p class="text-xs text-slate-500 mt-3">CCA is capped by the rental-loss restriction (it cannot create or increase a rental loss).</p>
+  </div>
+
+  <div class="bg-white rounded-xl border border-slate-200 p-6">
+    <div class="font-semibold mb-3">Tax & characterization</div>
+    <table class="w-full text-sm">
+      {% for label, amt in corporate.breakdown %}
+        {% if amt.is_positive() %}
+        <tr><td class="py-1">{{ label }}</td><td class="text-right tnum">{{ amt|money }}</td></tr>
+        {% endif %}
+      {% endfor %}
+      <tr class="border-t border-slate-800 font-semibold"><td class="py-1">Total corporate tax</td><td class="text-right tnum">{{ corporate.total_tax|money }}</td></tr>
+      <tr><td class="py-1 text-slate-500">Refundable portion → RDTOH</td><td class="text-right tnum">{{ corporate.refundable_tax_added_to_rdtoh|money }}</td></tr>
+    </table>
+    <div class="mt-3 text-sm rounded-lg px-3 py-2 {{ 'bg-amber-50 text-amber-800' if corporate.rental_is_sib else 'bg-teal-50 text-teal-800' }}">
+      Rental income is
+      <strong>{{ 'investment income (specified investment business)' if corporate.rental_is_sib else 'active business income' }}</strong>;
+      Quebec SBD factor (5,500-hour test): <strong>{{ '%.2f'|format(corporate.quebec_sbd_factor) }}</strong>.
+    </div>
+  </div>
+</div>
+
+{% if corporate.notes %}
+<div class="bg-white rounded-xl border border-slate-200 p-6 mt-6">
+  <div class="font-semibold mb-2">Notes</div>
+  <ul class="list-disc list-inside text-sm text-slate-700 space-y-1">
+    {% for n in corporate.notes %}<li>{{ n }}</li>{% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+{% if deemed %}
+<div class="bg-white rounded-xl border border-slate-200 p-6 mt-6">
+  <div class="font-semibold mb-2">Family trust — 21-year deemed disposition</div>
+  <p class="text-sm text-slate-700">
+    Next deemed disposition: <strong>{{ deemed.anniversary.isoformat() }}</strong>
+    ({{ deemed.years_remaining }} year(s) away). Estimated taxable capital gain at that date:
+    <strong class="tnum">{{ deemed.result.taxable_capital_gain|money }}</strong>
+    (on FMV {{ deemed.fmv|money }} vs ACB {{ deemed.acb|money }}).
+  </p>
+</div>
+{% endif %}
+
+<div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+  {% for r in pos.cca_results %}
+  <div class="bg-white rounded-xl border border-slate-200 p-4 text-sm">
+    <div class="font-semibold">CCA Class {{ r.cca_class }} — {{ r.building_id }}</div>
+    <div class="flex justify-between mt-1"><span class="text-slate-500">Rate</span><span class="tnum">{{ r.rate|pct }}</span></div>
+    <div class="flex justify-between"><span class="text-slate-500">Additions</span><span class="tnum">{{ r.additions|money }}</span></div>
+    <div class="flex justify-between"><span class="text-slate-500">CCA claimed</span><span class="tnum">{{ r.cca_claimed|money }}</span></div>
+    <div class="flex justify-between"><span class="text-slate-500">Closing UCC</span><span class="tnum">{{ r.closing_ucc|money }}</span></div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

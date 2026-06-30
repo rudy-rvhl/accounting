@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Rate Book & Sources{% endblock %}
+{% block content %}
+<h1 class="text-lg font-semibold mb-1">Rate Book {{ rb.year }} — Sources</h1>
+<p class="text-sm text-slate-500 mb-5">Every rate and threshold the engine uses is dated and cited. Verify against the primary sources each tax year.</p>
+
+<div class="space-y-3">
+{% for c in citations %}
+  <div class="bg-white rounded-xl border border-slate-200 p-4">
+    <div class="flex items-center justify-between">
+      <div class="font-semibold">{{ c.topic }}</div>
+      <div class="text-xs text-slate-400">{{ c.effective }}</div>
+    </div>
+    <div class="text-sm text-slate-700 mt-1">{{ c.note }}</div>
+    <div class="text-xs mt-1"><a href="{{ c.url }}" target="_blank" class="text-teal-700 hover:underline">{{ c.source }}</a></div>
+  </div>
+{% endfor %}
+</div>
+{% endblock %}

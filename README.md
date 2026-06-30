@@ -30,6 +30,9 @@ financial statements, and provides CFO decision-support and tax optimization.
 | **Transfer duty** | Droits de mutation (welcome tax) — standard + **Montréal luxury brackets**, greater-of basis, exemptions |
 | **Statements** | Income Statement (with **NOI**), Balance Sheet, Cash Flow, Equity — **ASPE** default, **IFRS (IAS 40 fair value)** toggle; HTML + PDF |
 | **CFO** | Cap rate, cash-on-cash, **DSCR**, LTV, GRM, break-even occupancy; acquisition **IRR/NPV** underwriting; after-tax **hold-vs-sell**; ranked **advisory** engine |
+| **Forecasting** | Multi-year projection of NOI, CCA (UCC rolled forward), corporate tax, RDTOH, DSCR and after-tax cash flow |
+| **Estate planning** | **Estate freeze** (s.85/86) modelling and **21-year deemed-disposition** plan (pay-the-tax vs s.107(2) roll-out) |
+| **Returns** | **T2 / CO-17 schedule mapping** — Schedule 1, Schedule 8 (CCA), Schedule 7 (AII), RDTOH continuity, federal/Québec tax split |
 | **Interfaces** | Python library, **CLI** (`qcre …`), and a **FastAPI + HTMX web app** |
 
 ---
@@ -47,6 +50,9 @@ qcre seed --db qcre.db              # build & store the demo company
 qcre statements --year 2026 --out out/statements.html --pdf out/statements.pdf
 qcre tax                            # corporate tax position + SIB/SBD determination
 qcre kpis                           # per-property & portfolio KPIs
+qcre forecast --years 5             # multi-year NOI/tax/CCA/RDTOH/cash-flow projection
+qcre estate-freeze                  # estate freeze + 21-year deemed-disposition plan
+qcre schedules                      # T2 / CO-17 return schedules (figures to transcribe)
 qcre advisory                       # ranked CFO & tax-optimization recommendations
 qcre transfer-duty 1800000 --montreal
 qcre citations                      # show the dated, sourced rate book
@@ -96,8 +102,11 @@ qcre/
   tax/
     rates/     dated, cited rate book (y2026.py) + registry
     sales_tax  cca  capital  corporate  transfer_duty  trust  personal  optimization
-  reports/     ASPE/IFRS statements (Income/Balance Sheet/Cash Flow/Equity) + HTML/PDF
-  cfo/         KPIs, acquisition underwriting (IRR/NPV), hold-vs-sell, advisory engine
+    estate_freeze
+  reports/     ASPE/IFRS statements (Income/Balance Sheet/Cash Flow/Equity) + HTML/PDF;
+               T2/CO-17 schedule mapping (tax_schedules.py)
+  cfo/         KPIs, acquisition underwriting (IRR/NPV), hold-vs-sell, advisory engine,
+               multi-year forecast (forecast.py)
   db/          SQLAlchemy/SQLite store (round-trips the company)
   web/         FastAPI + Jinja2 + HTMX UI (self-contained CSS)
   analysis.py  ties ledger → CCA → corporate tax → KPIs → advisory

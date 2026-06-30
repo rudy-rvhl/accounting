@@ -191,6 +191,46 @@ def forecast(
     typer.echo("\n" + typer.style(DISCLAIMER, dim=True))
 
 
+@app.command(name="estate-freeze")
+def estate_freeze(
+    db: str = typer.Option(None, help="Company database (defaults to demo)"),
+    growth: float = typer.Option(0.04, help="Assumed annual growth rate"),
+) -> None:
+    """Estate-freeze and 21-year deemed-disposition planning for the family trust."""
+    from datetime import date as _date
+    from decimal import Decimal as D
+
+    from qcre.analysis import equity_fair_value, shares_acb
+    from qcre.tax.estate_freeze import EstateFreezePlanner
+
+    co = _load(db)
+    if co.trust_created is None:
+        typer.echo("No family trust on file for this company.")
+        raise typer.Exit()
+    fmv = equity_fair_value(co)
+    acb = shares_acb(co)
+    planner = EstateFreezePlanner()
+
+    fr = planner.freeze(fmv, acb, freeze_date=_date(co.year, 1, 1), annual_growth=D(str(growth)))
+    _hr(f"Estate freeze — {co.entity_name}")
+    typer.echo(f"Freeze value (capped estate):     {fr.freeze_value.format()}")
+    typer.echo(f"Projected value in {fr.horizon_years} yrs:        {fr.projected_value_at_horizon.format()}")
+    typer.echo(f"Growth shifted to trust/children: {fr.growth_shifted_to_trust.format()}")
+    typer.echo(f"Estimated estate tax deferred:    {fr.estate_tax_deferred_estimate.format()}")
+    for n in fr.notes:
+        typer.echo("• " + n)
+
+    plan = planner.deemed_disposition_plan(
+        co.trust_created, fmv, acb, as_of=_date(co.year, 6, 30), annual_growth=D(str(growth)))
+    _hr("21-year deemed disposition")
+    typer.echo(f"Anniversary: {plan.anniversary.isoformat()} ({plan.years_remaining} yr)")
+    typer.echo(f"Projected FMV: {plan.projected_fmv.format()}  ACB: {plan.acb.format()}")
+    typer.echo(f"Tax if paid in trust: {plan.tax_if_pay.format()}")
+    typer.echo(f"Tax if rolled out at cost (s.107(2)): {plan.tax_if_rollout.format()}")
+    typer.echo(typer.style("\n" + plan.recommendation, bold=True))
+    typer.echo("\n" + typer.style(DISCLAIMER, dim=True))
+
+
 @app.command(name="transfer-duty")
 def transfer_duty(
     amount: float = typer.Argument(..., help="Taxable basis (price or assessment)"),

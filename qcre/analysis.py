@@ -122,6 +122,23 @@ def commercial_taxable_supplies(company: Company) -> Money:
     return company.ledger.balance("4010", start=fy.start, end=fy.end)
 
 
+def equity_fair_value(company: Company) -> Money:
+    """Net equity value of the corporation = property FMV − outstanding debt.
+
+    FMV proxy = the greater of municipal assessment and purchase price per property. This
+    is what the family trust's shares are worth (the base for 21-year / estate planning)."""
+    fmv = Money.zero()
+    for p in company.properties:
+        fmv += max(p.municipal_value, p.purchase_price, key=lambda m: m.amount)
+    debt = sum((m.balance_at(company.year) for m in company.mortgages), Money.zero())
+    return (fmv - debt).round(2)
+
+
+def shares_acb(company: Company) -> Money:
+    """Adjusted cost base of the trust's shares (the common-share capital it subscribed)."""
+    return company.ledger.balance("3000", end=company.fiscal_year.end)
+
+
 def deemed_disposition(company: Company, ratebook: RateBook | None = None
                        ) -> DeemedDispositionForecast | None:
     if company.trust_created is None:

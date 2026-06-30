@@ -9,7 +9,8 @@ client = TestClient(app)
 
 def test_pages_render():
     for path in ["/", "/properties", "/statements", "/statements?framework=IFRS",
-                 "/tax", "/advisory", "/planner", "/ledger", "/citations"]:
+                 "/tax", "/forecast", "/forecast?years=10", "/estate-freeze",
+                 "/advisory", "/planner", "/ledger", "/citations"]:
         r = client.get(path)
         assert r.status_code == 200, path
         assert "Gestion Immobilière Lellouche" in r.text

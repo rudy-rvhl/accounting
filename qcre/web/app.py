@@ -149,6 +149,25 @@ def forecast_page(request: Request, years: int = 5):
         request, active="forecast", result=res, rows=res.rows))
 
 
+@app.get("/estate-freeze", response_class=HTMLResponse)
+def estate_freeze_page(request: Request):
+    from datetime import date as _date
+
+    from qcre.analysis import equity_fair_value, shares_acb
+    from qcre.tax.estate_freeze import EstateFreezePlanner
+
+    co = get_company()
+    if co.trust_created is None:
+        return TEMPLATES.TemplateResponse(request, "estate_freeze.html", ctx(
+            request, active="estate", freeze=None, plan=None))
+    fmv, acb = equity_fair_value(co), shares_acb(co)
+    planner = EstateFreezePlanner()
+    fr = planner.freeze(fmv, acb, freeze_date=_date(co.year, 1, 1))
+    plan = planner.deemed_disposition_plan(co.trust_created, fmv, acb, as_of=_date(co.year, 6, 30))
+    return TEMPLATES.TemplateResponse(request, "estate_freeze.html", ctx(
+        request, active="estate", freeze=fr, plan=plan))
+
+
 @app.get("/planner", response_class=HTMLResponse)
 def planner(request: Request):
     return TEMPLATES.TemplateResponse(request, "planner.html", ctx(request, active="planner"))

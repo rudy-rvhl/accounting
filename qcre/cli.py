@@ -247,6 +247,21 @@ def transfer_duty(
 
 
 @app.command()
+def schedules(db: str = typer.Option(None, help="Company database (defaults to demo)")) -> None:
+    """Map outputs onto T2 / CO-17 return schedules (figures to transcribe)."""
+    from qcre.reports.tax_schedules import build_tax_schedules
+
+    co = _load(db)
+    for s in build_tax_schedules(co):
+        _hr(f"[{s.form}] {s.name}")
+        for ln in s.lines:
+            amt = ln.amount.format() if ln.amount is not None else ""
+            row = ("  " + ln.ref).ljust(10) + ln.label.ljust(56) + amt.rjust(15)
+            typer.echo(typer.style(row, bold=ln.bold))
+    typer.echo("\n" + typer.style(DISCLAIMER, dim=True))
+
+
+@app.command()
 def citations(year: int = typer.Option(2026, help="Taxation year")) -> None:
     """Show the dated, sourced rate book for the year."""
     from qcre.tax.rates import get_ratebook

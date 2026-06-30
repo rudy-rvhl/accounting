@@ -194,6 +194,14 @@ def planner_salary_dividend(
     return TEMPLATES.TemplateResponse(request, "_salary_result.html", {"request": request, "cmp": cmp})
 
 
+@app.get("/schedules", response_class=HTMLResponse)
+def schedules_page(request: Request):
+    from qcre.reports.tax_schedules import build_tax_schedules
+    co = get_company()
+    return TEMPLATES.TemplateResponse(request, "schedules.html", ctx(
+        request, active="schedules", schedules=build_tax_schedules(co)))
+
+
 @app.get("/citations", response_class=HTMLResponse)
 def citations(request: Request):
     rb = get_ratebook(get_company().year)

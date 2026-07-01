@@ -53,6 +53,33 @@ def test_pdf_extraction_from_text_pdf():
     assert txns[2].suggested_account == "5010"            # insurance
 
 
+def test_ocr_extracts_from_scanned_image_pdf():
+    import glob
+    import io
+    import shutil
+
+    import pytest
+    if not shutil.which("tesseract") or not shutil.which("pdftoppm"):
+        pytest.skip("OCR stack (tesseract/poppler) not installed")
+    from PIL import Image, ImageDraw, ImageFont
+
+    fonts = glob.glob("/usr/share/fonts/**/*.ttf", recursive=True)
+    fp = next((f for f in fonts if "DejaVuSans.ttf" in f or "LiberationSans-Regular" in f),
+              fonts[0] if fonts else None)
+    font = ImageFont.truetype(fp, 26) if fp else ImageFont.load_default()
+    img = Image.new("RGB", (1100, 160), "white")
+    d = ImageDraw.Draw(img)
+    d.text((20, 20), "2026-01-05   HYDRO QUEBEC PAYMENT   142.50   8,700.00", fill="black", font=font)
+    d.text((20, 70), "2026-01-15   ASSURANCE INTACT       310.00   9,800.01", fill="black", font=font)
+    buf = io.BytesIO()
+    img.save(buf, format="PDF", resolution=200)  # image-only PDF, no text layer
+
+    txns, source = parse_transactions("scan.pdf", buf.getvalue())
+    assert source == "pdf"
+    assert any("HYDRO" in t.description for t in txns)
+    assert any(t.suggested_account == "5010" for t in txns)  # insurance recognized via OCR text
+
+
 def test_pdf_does_not_misread_home_depot_as_income():
     from weasyprint import HTML
     pdf = HTML(string='<body style="font-family:monospace">'

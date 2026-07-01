@@ -34,7 +34,7 @@ financial statements, and provides CFO decision-support and tax optimization.
 | **Estate planning** | **Estate freeze** (s.85/86) modelling and **21-year deemed-disposition** plan (pay-the-tax vs s.107(2) roll-out) |
 | **Returns** | **T2 / CO-17 schedule mapping** — Schedule 1, Schedule 8 (CCA), Schedule 7 (AII), RDTOH continuity, federal/Québec tax split |
 | **Your own data** | **Multiple companies** and **buildings** entered through the web UI; **document upload** with a category dropdown (bank statements, bills, utilities, credit-card statements, leases, tax returns…) organized per company/building |
-| **Import** | Extract transactions from a **bank/credit-card CSV** or a **text PDF statement**, auto-suggest a category per line, then review/edit before posting to the books |
+| **Import** | Extract transactions from a **bank/credit-card CSV** or a **PDF statement** (text PDFs directly; **scanned/image PDFs via OCR**), auto-suggest a category per line, then review/edit before posting to the books |
 | **Interfaces** | Python library, **CLI** (`qcre …`), and a multi-company **FastAPI + HTMX web app** |
 
 ---

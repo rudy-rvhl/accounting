@@ -195,18 +195,57 @@ def _auto_amount(token: str) -> Decimal | None:
     return _parse_amount(t, european)
 
 
-def extract_pdf_text(data: bytes) -> str:
-    """Extract text from a (text-based) PDF. Returns '' if pdfplumber is unavailable."""
+def _pdfplumber_text(data: bytes) -> str:
     try:
         import pdfplumber
     except ImportError:  # pragma: no cover
         return ""
     lines: list[str] = []
-    with pdfplumber.open(io.BytesIO(data)) as pdf:
-        for page in pdf.pages:
-            text = page.extract_text() or ""
-            lines.append(text)
+    try:
+        with pdfplumber.open(io.BytesIO(data)) as pdf:
+            for page in pdf.pages:
+                lines.append(page.extract_text() or "")
+    except Exception:  # pragma: no cover - malformed PDF
+        return ""
     return "\n".join(lines)
+
+
+def ocr_pdf_text(data: bytes, *, max_pages: int = 20, dpi: int = 200) -> str:
+    """OCR a scanned/image PDF into text. Returns '' if the OCR stack is unavailable.
+
+    Requires the ``pytesseract`` + ``pdf2image`` Python packages and the ``tesseract-ocr``
+    and ``poppler-utils`` system binaries (installed in the Docker image)."""
+    try:
+        import pytesseract
+        from pdf2image import convert_from_bytes
+    except ImportError:  # pragma: no cover
+        return ""
+    try:
+        images = convert_from_bytes(data, dpi=dpi, first_page=1, last_page=max_pages)
+    except Exception:  # pragma: no cover - poppler missing / bad PDF
+        return ""
+    out: list[str] = []
+    for img in images:
+        for lang in ("eng+fra", "eng"):
+            try:
+                out.append(pytesseract.image_to_string(img, lang=lang))
+                break
+            except Exception:
+                continue
+    return "\n".join(out)
+
+
+def extract_pdf_text(data: bytes) -> str:
+    """Extract text from a PDF, falling back to OCR for scanned/image PDFs.
+
+    Text-based PDFs are read directly (fast). If that yields almost nothing — the mark of
+    a scanned statement — OCR is attempted and used when it recovers more text."""
+    text = _pdfplumber_text(data)
+    if len(text.strip()) < 40:  # essentially no embedded text → likely scanned
+        ocr = ocr_pdf_text(data)
+        if len(ocr.strip()) > len(text.strip()):
+            return ocr
+    return text
 
 
 def parse_pdf(data: bytes) -> list[ParsedTxn]:

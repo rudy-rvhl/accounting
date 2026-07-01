@@ -17,8 +17,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-pdf = ["weasyprint>=60"]
-dev = ["pytest>=8.0", "ruff>=0.4"]
+pdf = ["weasyprint>=60", "pdfplumber>=0.11"]
+dev = ["pytest>=8.0", "ruff>=0.4", "httpx>=0.24"]
 
 [project.scripts]
 qcre = "qcre.cli:app"

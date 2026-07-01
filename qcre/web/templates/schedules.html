@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}T2 / CO-17 Schedules{% endblock %}
+{% block content %}
+<h1 class="text-lg font-semibold mb-1">T2 / CO-17 Return Schedules</h1>
+<p class="text-sm text-slate-500 mb-5">
+  Figures mapped onto federal T2 and Québec CO-17 schedule lines, ready to transcribe.
+  Indicative line references — not a NETFILE transmission file; have a CPA review the return.
+</p>
+
+{% for s in schedules %}
+<div class="bg-white rounded-xl border border-slate-200 p-6 mb-5">
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-teal-700 font-semibold">{{ s.name }}</h2>
+    <span class="text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-600">{{ s.form }}</span>
+  </div>
+  <table class="w-full text-sm">
+    {% for ln in s.lines %}
+    <tr class="{{ 'font-semibold' if ln.bold }}">
+      <td class="py-1 text-slate-400 text-xs whitespace-nowrap pl-3" style="width:64px">{{ ln.ref }}</td>
+      <td class="py-1">{{ ln.label }}</td>
+      <td class="py-1 text-right tnum whitespace-nowrap {{ 'text-red-700' if ln.amount and ln.amount.is_negative() }}">
+        {{ ln.amount|money if ln.amount is not none else '' }}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endfor %}
+{% endblock %}

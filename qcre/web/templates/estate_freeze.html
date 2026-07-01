@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Estate Freeze / Trust{% endblock %}
+{% block content %}
+<h1 class="text-lg font-semibold mb-1">Estate Freeze & 21-Year Trust Planning</h1>
+<p class="text-sm text-slate-500 mb-5">Based on the corporation's net equity value (property FMV − debt) and the trust's share cost.</p>
+
+{% if not freeze %}
+  <div class="bg-white rounded-xl border border-slate-200 p-6 text-slate-600">No family trust on file for this company.</div>
+{% else %}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <div class="bg-white rounded-xl border border-slate-200 p-6">
+    <div class="font-semibold mb-3">Estate freeze (s.85 / s.86)</div>
+    <table class="w-full text-sm">
+      <tr><td class="py-1">Freeze value (parent's preferred shares)</td><td class="text-right tnum">{{ freeze.freeze_value|money }}</td></tr>
+      <tr><td class="py-1">Share ACB</td><td class="text-right tnum">{{ freeze.acb|money }}</td></tr>
+      <tr><td class="py-1">Projected value in {{ freeze.horizon_years }} years</td><td class="text-right tnum">{{ freeze.projected_value_at_horizon|money }}</td></tr>
+      <tr class="border-t border-slate-200"><td class="py-1 font-semibold">Growth shifted to trust/children</td><td class="text-right tnum font-semibold">{{ freeze.growth_shifted_to_trust|money }}</td></tr>
+      <tr><td class="py-1 text-slate-500">Estimated estate tax deferred</td><td class="text-right tnum">{{ freeze.estate_tax_deferred_estimate|money }}</td></tr>
+    </table>
+    <ul class="list-disc list-inside text-xs text-slate-600 mt-3 space-y-1">
+      {% for n in freeze.notes %}<li>{{ n }}</li>{% endfor %}
+    </ul>
+  </div>
+
+  <div class="bg-white rounded-xl border border-slate-200 p-6">
+    <div class="font-semibold mb-3">21-year deemed disposition (s.104(4))</div>
+    <table class="w-full text-sm">
+      <tr><td class="py-1">Anniversary</td><td class="text-right tnum">{{ plan.anniversary.isoformat() }} ({{ plan.years_remaining }} yr)</td></tr>
+      <tr><td class="py-1">Projected FMV</td><td class="text-right tnum">{{ plan.projected_fmv|money }}</td></tr>
+      <tr><td class="py-1">ACB</td><td class="text-right tnum">{{ plan.acb|money }}</td></tr>
+      <tr><td class="py-1">Capital gain</td><td class="text-right tnum">{{ plan.capital_gain|money }}</td></tr>
+      <tr class="border-t border-slate-200"><td class="py-1">Tax if paid in trust</td><td class="text-right tnum">{{ plan.tax_if_pay|money }}</td></tr>
+      <tr><td class="py-1">Tax if rolled out at cost</td><td class="text-right tnum">{{ plan.tax_if_rollout|money }}</td></tr>
+    </table>
+    <div class="mt-3 rounded-lg px-3 py-2 bg-teal-50 text-teal-800 text-sm">{{ plan.recommendation }}</div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

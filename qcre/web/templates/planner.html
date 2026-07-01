@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Tax Planner{% endblock %}
+{% block content %}
+<h1 class="text-lg font-semibold mb-5">Interactive Tax Planner</h1>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <!-- Transfer duty -->
+  <div class="bg-white rounded-xl border border-slate-200 p-6">
+    <div class="font-semibold mb-1">Property transfer duty (welcome tax)</div>
+    <p class="text-xs text-slate-500 mb-4">Droits de mutation immobilière for the {{ year }} year.</p>
+    <form hx-post="/planner/transfer-duty" hx-target="#duty-result" hx-swap="innerHTML" class="space-y-3">
+      <label class="block text-sm">Taxable basis (price or assessment)
+        <input name="amount" type="number" step="1000" value="500000"
+               class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 tnum">
+      </label>
+      <label class="flex items-center gap-2 text-sm">
+        <input type="checkbox" name="montreal" value="yes" class="rounded"> City of Montréal (luxury brackets)
+      </label>
+      <button class="bg-teal-600 text-white px-4 py-2 rounded-lg text-sm">Calculate</button>
+    </form>
+    <div id="duty-result" class="mt-4"></div>
+  </div>
+
+  <!-- Salary vs dividend -->
+  <div class="bg-white rounded-xl border border-slate-200 p-6">
+    <div class="font-semibold mb-1">Salary vs dividend</div>
+    <p class="text-xs text-slate-500 mb-4">Net cash to the owner from extracting corporate funds.</p>
+    <form hx-post="/planner/salary-dividend" hx-target="#sal-result" hx-swap="innerHTML" class="space-y-3">
+      <label class="block text-sm">Pre-tax corporate amount
+        <input name="amount" type="number" step="1000" value="100000"
+               class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 tnum">
+      </label>
+      <label class="block text-sm">Owner's other personal income
+        <input name="other_income" type="number" step="1000" value="0"
+               class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 tnum">
+      </label>
+      <label class="block text-sm">Corporate income type
+        <select name="income_type" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2">
+          <option value="investment">Investment income (rental / SIB)</option>
+          <option value="active">Active business income</option>
+        </select>
+      </label>
+      <button class="bg-teal-600 text-white px-4 py-2 rounded-lg text-sm">Compare</button>
+    </form>
+    <div id="sal-result" class="mt-4"></div>
+  </div>
+</div>
+{% endblock %}

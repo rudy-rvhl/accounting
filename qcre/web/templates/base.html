@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}QCRE{% endblock %} — {{ company.entity_name }}</title>
+  <link rel="stylesheet" href="/static/app.css">
+  <script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
+</head>
+<body class="bg-slate-100 text-slate-800">
+<div class="flex min-h-screen">
+  <!-- Sidebar -->
+  <aside class="w-60 bg-slate-900 text-slate-200 flex flex-col">
+    <div class="px-5 py-4 border-b border-slate-700">
+      <div class="text-lg font-bold text-white">QCRE</div>
+      <div class="text-xs text-slate-400">Quebec Real-Estate CFO</div>
+    </div>
+    <nav class="flex-1 px-3 py-4 space-y-1 text-sm">
+      {% set items = [
+        ('dashboard','/','Dashboard'),
+        ('properties','/properties','Properties'),
+        ('statements','/statements','Financial Statements'),
+        ('tax','/tax','Tax Position'),
+        ('forecast','/forecast','Multi-Year Forecast'),
+        ('advisory','/advisory','CFO Advisory'),
+        ('planner','/planner','Tax Planner'),
+        ('estate','/estate-freeze','Estate Freeze / Trust'),
+        ('schedules','/schedules','T2 / CO-17 Schedules'),
+        ('ledger','/ledger','General Ledger'),
+        ('citations','/citations','Rate Book & Sources')
+      ] %}
+      {% for key, href, label in items %}
+        <a href="{{ href }}"
+           class="block px-3 py-2 rounded-lg {% if active==key %}bg-teal-600 text-white{% else %}hover:bg-slate-800{% endif %}">
+          {{ label }}
+        </a>
+      {% endfor %}
+    </nav>
+    <div class="px-4 py-3 text-[10px] text-slate-500 border-t border-slate-700">
+      v{{ version }} · fiscal {{ company.fiscal_year.label }}
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 overflow-auto">
+    <header class="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between">
+      <div>
+        <div class="text-xl font-semibold">{{ company.entity_name }}</div>
+        <div class="text-xs text-slate-500">CCPC held by family trust · Montréal, Québec</div>
+      </div>
+      <div class="text-right text-xs text-slate-500">
+        {{ company.framework.value }} · {{ company.fiscal_year.label }}
+      </div>
+    </header>
+    <div class="p-8">
+      {% block content %}{% endblock %}
+      <p class="mt-8 text-[11px] text-slate-400 border-t border-slate-200 pt-4">{{ disclaimer }}</p>
+    </div>
+  </main>
+</div>
+</body>
+</html>

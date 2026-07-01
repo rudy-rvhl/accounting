@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}CFO Advisory{% endblock %}
+{% block content %}
+<h1 class="text-lg font-semibold mb-1">CFO Advisory & Tax Optimization</h1>
+<p class="text-sm text-slate-500 mb-5">Ranked recommendations derived from your books and the {{ year }} rate book.</p>
+
+{% set colors = {'critical':'border-red-500 bg-red-50','warning':'border-amber-500 bg-amber-50','opportunity':'border-teal-500 bg-teal-50','info':'border-slate-400 bg-slate-50'} %}
+<div class="space-y-3">
+{% for it in advisory %}
+  <div class="border-l-4 {{ colors[it.severity.value] }} rounded-r-xl px-5 py-4">
+    <div class="flex items-center justify-between">
+      <div class="text-[11px] uppercase tracking-wide text-slate-500">{{ it.severity.value }} · {{ it.category }}</div>
+      {% if it.impact %}<div class="text-sm font-semibold tnum">{{ it.impact|money }}</div>{% endif %}
+    </div>
+    <div class="font-semibold mt-1">{{ it.title }}</div>
+    <div class="text-sm text-slate-700 mt-1">{{ it.message }}</div>
+  </div>
+{% else %}
+  <div class="text-slate-500">No advisory items.</div>
+{% endfor %}
+</div>
+{% endblock %}

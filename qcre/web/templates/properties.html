@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Properties{% endblock %}
+{% block content %}
+<h1 class="text-lg font-semibold mb-5">Properties</h1>
+
+{% for prop, k in per %}
+<div class="bg-white rounded-xl border border-slate-200 p-6 mb-5">
+  <div class="flex items-start justify-between">
+    <div>
+      <div class="text-base font-semibold">{{ prop.name }}</div>
+      <div class="text-xs text-slate-500">{{ prop.address }}</div>
+    </div>
+    <div class="text-right">
+      <div class="text-xs text-slate-500">Purchase price</div>
+      <div class="font-semibold tnum">{{ prop.purchase_price|money }}</div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4 text-sm">
+    {% for label, value in [
+      ('NOI', k.noi|money), ('Cap rate', k.cap_rate|pct), ('DSCR', '%.2fx'|format(k.dscr)),
+      ('LTV', k.ltv|pct), ('Cash-on-cash', k.cash_on_cash|pct), ('GRM', '%.1f'|format(k.grm)),
+      ('Op. exp. ratio', k.operating_expense_ratio|pct), ('Break-even occ.', k.break_even_occupancy|pct)
+    ] %}
+    <div class="bg-slate-50 rounded-lg px-3 py-2">
+      <div class="text-[11px] text-slate-500">{{ label }}</div>
+      <div class="font-medium tnum">{{ value }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="mt-4 text-sm">
+    <div class="text-slate-500 text-xs mb-1">Units ({{ prop.commercial_fraction|pct }} commercial by area)</div>
+    <table class="w-full text-sm">
+      <thead class="text-slate-500 text-xs"><tr>
+        <th class="text-left">Unit</th><th class="text-left">Type</th>
+        <th class="text-right">Sq ft</th><th class="text-right">Monthly rent</th><th class="text-left pl-3">GST/QST</th>
+      </tr></thead>
+      <tbody>
+      {% for u in prop.units %}
+        <tr class="border-t border-slate-100">
+          <td>{{ u.unit_id }}</td>
+          <td class="capitalize">{{ u.kind.value }}</td>
+          <td class="text-right tnum">{{ '{:,}'.format(u.square_feet|int) }}</td>
+          <td class="text-right tnum">{{ u.monthly_rent|money }}</td>
+          <td class="pl-3">{{ 'Taxable' if u.kind.value=='commercial' else 'Exempt' }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}

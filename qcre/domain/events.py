@@ -194,6 +194,33 @@ class EventBuilder:
             source="amortization", property_id=property_id,
         )
 
+    # -- imported cash transaction (bank/credit-card CSV) -------------------
+    def cash_transaction(
+        self, property_id: str | None, account_code: str, amount: Money, on: date,
+        *, inflow: bool, memo: str = "",
+    ) -> JournalEntry:
+        """A simple cash-basis entry from an imported bank line.
+
+        Outflow (expense): debit the chosen account, credit cash. Inflow (income): debit
+        cash, credit the chosen account. GST/QST is *not* split out here — imported amounts
+        are recorded at their gross bank value; refine later via the expense form if needed.
+        """
+        amt = abs(amount).round(2)
+        if inflow:
+            lines = [
+                JournalLine(Acc.CASH, debit=amt, memo=memo),
+                JournalLine(account_code, credit=amt, memo=memo),
+            ]
+        else:
+            lines = [
+                JournalLine(account_code, debit=amt, memo=memo),
+                JournalLine(Acc.CASH, credit=amt, memo=memo),
+            ]
+        return JournalEntry(
+            date=on, description=memo or ("Deposit" if inflow else "Payment"),
+            lines=lines, source="import", property_id=property_id,
+        )
+
     # -- capital improvement (capitalised, not expensed) --------------------
     def capital_improvement(
         self, property_id: str, amount: Money, on: date, *, to_cash: bool = True,

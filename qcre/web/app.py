@@ -356,6 +356,69 @@ async def upload_document(
     return RedirectResponse(url="/documents", status_code=303)
 
 
+@app.get("/import", response_class=HTMLResponse)
+def import_form(request: Request):
+    return _render(request, "import.html", active="import")
+
+
+@app.post("/import/preview", response_class=HTMLResponse)
+async def import_preview(
+    request: Request,
+    file: UploadFile = File(...),
+    doc_type: str = Form("bank_statement"),
+    property_id: str = Form(""),
+):
+    from qcre.importing import parse_transactions
+    cid = active_cid(request)
+    data = await file.read()
+    # Always keep the source file in the document library.
+    REPO.add_document(
+        cid, doc_type=doc_type if is_valid(doc_type) else "bank_statement",
+        original_filename=file.filename or "import", data=data,
+        content_type=file.content_type or "", property_id=property_id or None,
+        notes="imported",
+    )
+    txns, source = parse_transactions(file.filename or "", data)
+    co = REPO.get_company(cid)
+    expense_accounts = [a for a in co.ledger.chart if a.type.value == "expense" and "noi" in a.tags]
+    income_accounts = [a for a in co.ledger.chart if a.type.value == "revenue" and "rent" in a.tags]
+    return _render(request, "import_review.html", active="import", txns=txns, source=source,
+                   default_property=property_id, expense_accounts=expense_accounts,
+                   income_accounts=income_accounts, filename=file.filename)
+
+
+@app.post("/import/commit")
+async def import_commit(request: Request):
+    cid = active_cid(request)
+    co = REPO.get_company(cid)
+    eb = EventBuilder(get_ratebook(co.year))
+    form = await request.form()
+    count = int(form.get("row_count", "0"))
+    posted = 0
+    for i in range(count):
+        if form.get(f"include_{i}") != "on":
+            continue
+        try:
+            amount = Money(str(form.get(f"amount_{i}", "0")))
+        except Exception:
+            continue
+        if amount.is_zero():
+            continue
+        kind = form.get(f"kind_{i}", "expense")
+        account = form.get(f"account_{i}", "5030")
+        pid = form.get(f"building_{i}", "") or None
+        on = form.get(f"date_{i}", "")
+        memo = form.get(f"description_{i}", "")[:120]
+        try:
+            d = date.fromisoformat(on)
+        except ValueError:
+            d = co.fiscal_year.start
+        entry = eb.cash_transaction(pid, account, amount, d, inflow=(kind == "income"), memo=memo)
+        REPO.post_entry(cid, entry)
+        posted += 1
+    return RedirectResponse(url="/ledger", status_code=303)
+
+
 @app.get("/documents/{doc_id}/download")
 def download_document(doc_id: int):
     got = REPO.get_document(doc_id)

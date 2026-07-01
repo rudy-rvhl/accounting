@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Import transactions{% endblock %}
+{% block content %}
+<h1 class="text-lg font-semibold mb-1">Import transactions</h1>
+<p class="text-sm text-slate-500 mb-5">
+  Upload a bank or credit-card <strong>CSV export</strong> or a <strong>PDF statement</strong>.
+  We'll extract the transactions so you can review, categorize, and post them to the books.
+  The file is also saved to your Documents.
+</p>
+
+<form action="/import/preview" method="post" enctype="multipart/form-data"
+      class="bg-white rounded-xl border border-slate-200 p-6 max-w-xl space-y-4 text-sm">
+  <label class="block">Statement file (.csv or .pdf)
+    <input type="file" name="file" accept=".csv,.pdf,text/csv,application/pdf" required class="mt-1 w-full text-sm">
+  </label>
+  <label class="block">Save as document type
+    <select name="doc_type" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2">
+      {% for value, lbl in doc_types %}
+        <option value="{{ value }}" {{ 'selected' if value=='bank_statement' }}>{{ lbl }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label class="block">Default building <span class="text-slate-400">(optional)</span>
+    <select name="property_id" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2">
+      <option value="">— none / whole company —</option>
+      {% for p in company.properties %}<option value="{{ p.property_id }}">{{ p.name }}</option>{% endfor %}
+    </select>
+  </label>
+  <button class="bg-teal-600 text-white px-4 py-2 rounded-lg">Extract transactions →</button>
+</form>
+
+<div class="mt-4 text-xs text-slate-500 max-w-xl">
+  <strong>Text PDFs</strong> (downloaded from online banking) extract well. <strong>Scanned/photographed</strong>
+  statements have no embedded text and won't extract — export a CSV or a text PDF instead. Always review the
+  extracted rows before posting.
+</div>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Get started{% endblock %}
+{% block content %}
+<div class="bg-white rounded-xl border border-slate-200 p-8 max-w-2xl">
+  <h1 class="text-lg font-semibold mb-2">{{ company.entity_name }} has no data yet</h1>
+  <p class="text-sm text-slate-600 mb-5">
+    Add your buildings and record some income/expenses, and this company's statements, tax
+    position, forecast and advisory will populate automatically. You can also upload source
+    documents (bank statements, bills, utilities…) to keep everything organized.
+  </p>
+  <div class="flex flex-wrap gap-3">
+    <a href="/properties/new" class="bg-teal-600 text-white px-4 py-2 rounded-lg text-sm">1. Add a building</a>
+    <a href="/transactions/new" class="bg-slate-800 text-white px-4 py-2 rounded-lg text-sm">2. Record income / expense</a>
+    <a href="/documents" class="bg-white border border-slate-300 px-4 py-2 rounded-lg text-sm">3. Upload documents</a>
+  </div>
+</div>
+{% endblock %}

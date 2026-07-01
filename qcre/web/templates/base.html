@@ -18,7 +18,9 @@
     <nav class="flex-1 px-3 py-4 space-y-1 text-sm">
       {% set items = [
         ('dashboard','/','Dashboard'),
+        ('companies','/companies','Companies'),
         ('properties','/properties','Properties'),
+        ('documents','/documents','Documents'),
         ('statements','/statements','Financial Statements'),
         ('tax','/tax','Tax Position'),
         ('forecast','/forecast','Multi-Year Forecast'),
@@ -46,10 +48,20 @@
     <header class="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between">
       <div>
         <div class="text-xl font-semibold">{{ company.entity_name }}</div>
-        <div class="text-xs text-slate-500">CCPC held by family trust · Montréal, Québec</div>
+        <div class="text-xs text-slate-500">{{ company.framework.value }} · fiscal {{ company.fiscal_year.label }}{% if company.trust_created %} · held by family trust{% endif %}</div>
       </div>
-      <div class="text-right text-xs text-slate-500">
-        {{ company.framework.value }} · {{ company.fiscal_year.label }}
+      <div class="flex items-center gap-2">
+        {% if companies and companies|length > 1 %}
+        <form action="/companies/select" method="get">
+          <select name="cid" onchange="this.form.submit()"
+                  class="text-sm border border-slate-300 rounded-lg px-2 py-1 bg-white">
+            {% for c in companies %}
+              <option value="{{ c.id }}" {{ 'selected' if c.id==company_id }}>{{ c.name }}</option>
+            {% endfor %}
+          </select>
+        </form>
+        {% endif %}
+        <a href="/companies" class="text-sm bg-slate-800 text-white px-3 py-1 rounded-lg">+ Company</a>
       </div>
     </header>
     <div class="p-8">

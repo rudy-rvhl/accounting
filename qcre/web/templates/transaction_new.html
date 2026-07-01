@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Record transaction{% endblock %}
+{% block content %}
+<h1 class="text-lg font-semibold mb-1">Record income / expense</h1>
+<p class="text-sm text-slate-500 mb-5">Posts a balanced journal entry with the correct GST/QST treatment.</p>
+
+<form action="/transactions" method="post" class="bg-white rounded-xl border border-slate-200 p-6 max-w-2xl space-y-4 text-sm">
+  <div class="grid grid-cols-2 gap-4">
+    <label class="block">Type
+      <select name="kind" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2">
+        <option value="rent">Rent income</option>
+        <option value="expense">Operating expense</option>
+      </select>
+    </label>
+    <label class="block">Building
+      <select name="property_id" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2">
+        {% for p in company.properties %}<option value="{{ p.property_id }}">{{ p.name }}</option>{% endfor %}
+      </select>
+    </label>
+    <label class="block">Amount (before tax)
+      <input name="amount" type="number" step="1" required class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 tnum">
+    </label>
+    <label class="block">Date
+      <input name="on" type="date" required value="{{ company.fiscal_year.start.isoformat() }}" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2">
+    </label>
+    <label class="block">Rent type <span class="text-slate-400">(income only)</span>
+      <select name="rent_kind" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2">
+        <option value="residential">Residential (GST/QST exempt)</option>
+        <option value="commercial">Commercial (GST/QST taxable)</option>
+      </select>
+    </label>
+    <label class="block">Expense account <span class="text-slate-400">(expense only)</span>
+      <select name="expense_account" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2">
+        {% for a in expense_accounts %}<option value="{{ a.code }}">{{ a.name }}</option>{% endfor %}
+      </select>
+    </label>
+  </div>
+  <label class="flex items-center gap-2">
+    <input type="checkbox" name="taxable_input" value="yes"> Expense includes GST/QST (claim ITC/ITR on the commercial share)
+  </label>
+  <div class="flex gap-3">
+    <button class="bg-teal-600 text-white px-4 py-2 rounded-lg">Post entry</button>
+    <a href="/ledger" class="px-4 py-2 rounded-lg border border-slate-300">Cancel</a>
+  </div>
+</form>
+{% endblock %}

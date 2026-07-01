@@ -95,64 +95,67 @@ def save_company(company: Company, path: str) -> str:
     return path
 
 
+def company_from_row(crow: CompanyRow) -> Company:
+    """Rebuild a :class:`Company` (ledger replayed, properties, mortgages) from ORM rows."""
+    ledger = Ledger(default_chart())
+    for erow in sorted(crow.entries, key=lambda e: (e.date, e.id)):
+        lines = [
+            JournalLine(
+                account_code=l.account_code, debit=Money(l.debit), credit=Money(l.credit),
+                memo=l.memo, property_id=l.property_id,
+            )
+            for l in erow.lines
+        ]
+        ledger.post(JournalEntry(
+            date=date.fromisoformat(erow.date), description=erow.description,
+            lines=lines, reference=erow.reference, source=erow.source,
+            property_id=erow.property_id,
+        ))
+
+    properties = []
+    for prow in crow.properties:
+        units = [
+            RentalUnit(u.unit_id, UnitKind(u.kind), Decimal(u.square_feet),
+                       Money(u.monthly_rent), u.occupied)
+            for u in prow.units
+        ]
+        properties.append(Property(
+            property_id=prow.property_id, name=prow.name, address=prow.address,
+            purchase_price=Money(prow.purchase_price),
+            purchase_date=date.fromisoformat(prow.purchase_date),
+            land_value=Money(prow.land_value), building_value=Money(prow.building_value),
+            chattels_value=Money(prow.chattels_value), municipal_value=Money(prow.municipal_value),
+            in_montreal=prow.in_montreal, building_cca_class=prow.building_cca_class, units=units,
+        ))
+
+    mortgages = [
+        Mortgage(
+            m.mortgage_id, m.property_id, Money(m.principal), Decimal(m.annual_rate),
+            m.amortization_years, date.fromisoformat(m.start_date),
+            m.payments_per_year, m.compounding_per_year,
+        )
+        for m in crow.mortgages
+    ]
+
+    return Company(
+        entity_name=crow.entity_name, ledger=ledger, properties=properties,
+        mortgages=mortgages,
+        fiscal_year=FiscalYear(date.fromisoformat(crow.fiscal_year_start),
+                               date.fromisoformat(crow.fiscal_year_end)),
+        framework=Framework(crow.framework),
+        trust_created=date.fromisoformat(crow.trust_created) if crow.trust_created else None,
+        full_time_employees=crow.full_time_employees,
+        quebec_paid_hours=Decimal(crow.quebec_paid_hours), year=crow.year,
+    )
+
+
 def load_company(path: str) -> Company:
     eng = _engine(path)
     with Session(eng) as s:
         crow = s.query(CompanyRow).first()
         if crow is None:
             raise ValueError(f"No company stored in {path}")
-
-        ledger = Ledger(default_chart())
-        entries = sorted(crow.entries, key=lambda e: (e.date, e.id))
-        for erow in entries:
-            lines = [
-                JournalLine(
-                    account_code=l.account_code, debit=Money(l.debit), credit=Money(l.credit),
-                    memo=l.memo, property_id=l.property_id,
-                )
-                for l in erow.lines
-            ]
-            ledger.post(JournalEntry(
-                date=date.fromisoformat(erow.date), description=erow.description,
-                lines=lines, reference=erow.reference, source=erow.source,
-                property_id=erow.property_id,
-            ))
-
-        properties = []
-        for prow in crow.properties:
-            units = [
-                RentalUnit(u.unit_id, UnitKind(u.kind), Decimal(u.square_feet),
-                           Money(u.monthly_rent), u.occupied)
-                for u in prow.units
-            ]
-            properties.append(Property(
-                property_id=prow.property_id, name=prow.name, address=prow.address,
-                purchase_price=Money(prow.purchase_price),
-                purchase_date=date.fromisoformat(prow.purchase_date),
-                land_value=Money(prow.land_value), building_value=Money(prow.building_value),
-                chattels_value=Money(prow.chattels_value), municipal_value=Money(prow.municipal_value),
-                in_montreal=prow.in_montreal, building_cca_class=prow.building_cca_class, units=units,
-            ))
-
-        mortgages = [
-            Mortgage(
-                m.mortgage_id, m.property_id, Money(m.principal), Decimal(m.annual_rate),
-                m.amortization_years, date.fromisoformat(m.start_date),
-                m.payments_per_year, m.compounding_per_year,
-            )
-            for m in crow.mortgages
-        ]
-
-        return Company(
-            entity_name=crow.entity_name, ledger=ledger, properties=properties,
-            mortgages=mortgages,
-            fiscal_year=FiscalYear(date.fromisoformat(crow.fiscal_year_start),
-                                   date.fromisoformat(crow.fiscal_year_end)),
-            framework=Framework(crow.framework),
-            trust_created=date.fromisoformat(crow.trust_created) if crow.trust_created else None,
-            full_time_employees=crow.full_time_employees,
-            quebec_paid_hours=Decimal(crow.quebec_paid_hours), year=crow.year,
-        )
+        return company_from_row(crow)
 
 
 def seed(path: str) -> str:

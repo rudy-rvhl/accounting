@@ -33,6 +33,8 @@ class CompanyRow(Base):
         back_populates="company", cascade="all, delete-orphan")
     mortgages: Mapped[list["MortgageRow"]] = relationship(
         back_populates="company", cascade="all, delete-orphan")
+    documents: Mapped[list["DocumentRow"]] = relationship(
+        back_populates="company", cascade="all, delete-orphan")
 
 
 class JournalEntryRow(Base):
@@ -95,6 +97,23 @@ class UnitRow(Base):
     occupied: Mapped[bool] = mapped_column(Boolean, default=True)
 
     property: Mapped[PropertyRow] = relationship(back_populates="units")
+
+
+class DocumentRow(Base):
+    __tablename__ = "document"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"))
+    property_id: Mapped[str | None] = mapped_column(String, nullable=True)  # optional building
+    doc_type: Mapped[str] = mapped_column(String)                          # e.g. "bank_statement"
+    original_filename: Mapped[str] = mapped_column(String)
+    stored_path: Mapped[str] = mapped_column(String)
+    content_type: Mapped[str] = mapped_column(String, default="")
+    size_bytes: Mapped[int] = mapped_column(Integer, default=0)
+    period: Mapped[str] = mapped_column(String, default="")                # e.g. "2026-01"
+    notes: Mapped[str] = mapped_column(String, default="")
+    uploaded_at: Mapped[str] = mapped_column(String, default="")
+
+    company: Mapped[CompanyRow] = relationship(back_populates="documents")
 
 
 class MortgageRow(Base):

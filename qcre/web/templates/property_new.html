@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Add building{% endblock %}
+{% block content %}
+<h1 class="text-lg font-semibold mb-1">Add a building</h1>
+<p class="text-sm text-slate-500 mb-5">For {{ company.entity_name }}. You can add rental units afterwards on the Properties page.</p>
+
+<form action="/properties" method="post" class="bg-white rounded-xl border border-slate-200 p-6 max-w-2xl space-y-4 text-sm">
+  <label class="block">Building name
+    <input name="name" required placeholder="e.g. 1200 Av. du Mont-Royal"
+           class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2">
+  </label>
+  <label class="block">Address
+    <input name="address" placeholder="Montréal, QC" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2">
+  </label>
+  <div class="grid grid-cols-2 gap-4">
+    <label class="block">Purchase price
+      <input name="purchase_price" type="number" step="1000" value="0" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 tnum">
+    </label>
+    <label class="block">Purchase date
+      <input name="purchase_date" type="date" required value="2026-01-01" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2">
+    </label>
+    <label class="block">Land value
+      <input name="land_value" type="number" step="1000" value="0" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 tnum">
+    </label>
+    <label class="block">Building value <span class="text-slate-400">(depreciable)</span>
+      <input name="building_value" type="number" step="1000" value="0" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 tnum">
+    </label>
+    <label class="block">Chattels / appliances <span class="text-slate-400">(Class 8)</span>
+      <input name="chattels_value" type="number" step="500" value="0" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 tnum">
+    </label>
+    <label class="block">Municipal assessment
+      <input name="municipal_value" type="number" step="1000" value="0" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 tnum">
+    </label>
+    <label class="block">Building CCA class
+      <select name="building_cca_class" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2">
+        <option value="1">Class 1 — residential (4%)</option>
+        <option value="1-NR">Class 1 — non-residential (6%)</option>
+        <option value="1-PBR">Class 1 — new purpose-built rental (10%)</option>
+      </select>
+    </label>
+    <label class="flex items-center gap-2 mt-6">
+      <input type="checkbox" name="in_montreal" value="yes"> Located in the City of Montréal
+    </label>
+  </div>
+  <div class="flex gap-3">
+    <button class="bg-teal-600 text-white px-4 py-2 rounded-lg">Add building</button>
+    <a href="/properties" class="px-4 py-2 rounded-lg border border-slate-300">Cancel</a>
+  </div>
+</form>
+{% endblock %}

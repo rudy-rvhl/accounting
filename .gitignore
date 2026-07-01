@@ -22,3 +22,7 @@ out/
 .DS_Store
 .idea/
 .vscode/
+
+# multi-company app data
+qcre_app.db
+qcre_uploads/

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Companies{% endblock %}
+{% block content %}
+<h1 class="text-lg font-semibold mb-5">Companies</h1>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <!-- Existing companies -->
+  <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <div class="px-5 py-3 font-semibold border-b border-slate-200">Your companies</div>
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
+        <tr><th class="text-left px-5 py-2">Name</th><th class="text-right px-3">Year</th>
+        <th class="text-right px-3">Buildings</th><th class="text-right px-3">Docs</th><th class="px-5"></th></tr>
+      </thead>
+      <tbody>
+        {% for c in companies %}
+        <tr class="border-t border-slate-100 {{ 'bg-teal-50' if c.id==company_id }}">
+          <td class="px-5 py-2">{{ c.name }}</td>
+          <td class="text-right px-3 tnum">{{ c.year }}</td>
+          <td class="text-right px-3 tnum">{{ c.property_count }}</td>
+          <td class="text-right px-3 tnum">{{ c.document_count }}</td>
+          <td class="text-right px-5">
+            {% if c.id==company_id %}<span class="text-xs text-teal-700">active</span>
+            {% else %}<a class="text-xs text-teal-700 hover:underline" href="/companies/select?cid={{ c.id }}">switch</a>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Create company -->
+  <div class="bg-white rounded-xl border border-slate-200 p-6">
+    <div class="font-semibold mb-3">Add a company</div>
+    <form action="/companies" method="post" class="space-y-3 text-sm">
+      <label class="block">Company name
+        <input name="entity_name" required placeholder="e.g. 9421-1234 Québec Inc."
+               class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2">
+      </label>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="block">Fiscal year
+          <input name="year" type="number" value="2026" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 tnum">
+        </label>
+        <label class="block">Accounting framework
+          <select name="framework" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2">
+            <option value="ASPE">ASPE</option><option value="IFRS">IFRS</option>
+          </select>
+        </label>
+      </div>
+      <label class="block">Family trust creation date <span class="text-slate-400">(optional — enables 21-year planning)</span>
+        <input name="trust_created" type="date" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2">
+      </label>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="block">Full-time employees <span class="text-slate-400">(&gt;5 = active business)</span>
+          <input name="full_time_employees" type="number" value="0" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 tnum">
+        </label>
+        <label class="block">Québec paid hours/yr <span class="text-slate-400">(5,500 for SBD)</span>
+          <input name="quebec_paid_hours" type="number" value="0" class="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 tnum">
+        </label>
+      </div>
+      <button class="bg-teal-600 text-white px-4 py-2 rounded-lg">Create company</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

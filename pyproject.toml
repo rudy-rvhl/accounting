@@ -30,6 +30,11 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 include = ["qcre*"]
 
+[tool.setuptools.package-data]
+# Ship the web templates and static assets inside the wheel (they are not .py files,
+# so setuptools would otherwise omit them and the web app would fail on a real install).
+"qcre.web" = ["templates/*.html", "static/*.css"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"

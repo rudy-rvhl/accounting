@@ -1,7 +1,20 @@
 {% extends "base.html" %}
 {% block title %}Properties{% endblock %}
 {% block content %}
-<h1 class="text-lg font-semibold mb-5">Properties</h1>
+<div class="flex items-center justify-between mb-5">
+  <h1 class="text-lg font-semibold">Properties</h1>
+  <div class="flex gap-2">
+    <a href="/transactions/new" class="text-sm px-3 py-1.5 rounded-lg border border-slate-300 bg-white">Record income / expense</a>
+    <a href="/properties/new" class="text-sm px-3 py-1.5 rounded-lg bg-teal-600 text-white">+ Add building</a>
+  </div>
+</div>
+
+{% if not per %}
+<div class="bg-white rounded-xl border border-slate-200 p-8 text-sm text-slate-600 max-w-2xl">
+  No buildings yet for {{ company.entity_name }}.
+  <a href="/properties/new" class="text-teal-700 hover:underline">Add your first building →</a>
+</div>
+{% endif %}
 
 {% for prop, k in per %}
 <div class="bg-white rounded-xl border border-slate-200 p-6 mb-5">
@@ -48,6 +61,16 @@
       {% endfor %}
       </tbody>
     </table>
+    <!-- Add unit -->
+    <form action="/units" method="post" class="flex flex-wrap items-end gap-2 mt-3 text-xs">
+      <input type="hidden" name="property_id" value="{{ prop.property_id }}">
+      <label>Unit id<input name="unit_id" required class="block mt-0.5 border border-slate-300 rounded px-2 py-1 w-20"></label>
+      <label>Type<select name="kind" class="block mt-0.5 border border-slate-300 rounded px-2 py-1">
+        <option value="residential">Residential</option><option value="commercial">Commercial</option></select></label>
+      <label>Sq ft<input name="square_feet" type="number" value="0" class="block mt-0.5 border border-slate-300 rounded px-2 py-1 w-24 tnum"></label>
+      <label>Monthly rent<input name="monthly_rent" type="number" value="0" class="block mt-0.5 border border-slate-300 rounded px-2 py-1 w-28 tnum"></label>
+      <button class="bg-slate-800 text-white px-3 py-1 rounded">+ Add unit</button>
+    </form>
   </div>
 </div>
 {% endfor %}

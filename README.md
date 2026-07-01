@@ -33,7 +33,8 @@ financial statements, and provides CFO decision-support and tax optimization.
 | **Forecasting** | Multi-year projection of NOI, CCA (UCC rolled forward), corporate tax, RDTOH, DSCR and after-tax cash flow |
 | **Estate planning** | **Estate freeze** (s.85/86) modelling and **21-year deemed-disposition** plan (pay-the-tax vs s.107(2) roll-out) |
 | **Returns** | **T2 / CO-17 schedule mapping** — Schedule 1, Schedule 8 (CCA), Schedule 7 (AII), RDTOH continuity, federal/Québec tax split |
-| **Interfaces** | Python library, **CLI** (`qcre …`), and a **FastAPI + HTMX web app** |
+| **Your own data** | **Multiple companies** and **buildings** entered through the web UI; **document upload** with a category dropdown (bank statements, bills, utilities, credit-card statements, leases, tax returns…) organized per company/building |
+| **Interfaces** | Python library, **CLI** (`qcre …`), and a multi-company **FastAPI + HTMX web app** |
 
 ---
 
@@ -57,10 +58,19 @@ qcre advisory                       # ranked CFO & tax-optimization recommendati
 qcre transfer-duty 1800000 --montreal
 qcre citations                      # show the dated, sourced rate book
 
-# Web UI
+# Web UI (multi-company: create companies, add buildings, upload documents)
 uvicorn qcre.web.app:app --reload   # then open http://127.0.0.1:8000
-#   set QCRE_DB=/path/to.db to use a saved company instead of the demo
+#   QCRE_DB=/path/to/app.db       where companies are stored (default qcre_app.db)
+#   QCRE_UPLOADS=/path/to/uploads where uploaded documents are stored
 ```
+
+### Entering your own data (web UI)
+
+1. **Companies** → *Add a company* (name, fiscal year, framework, family-trust date, employees/hours).
+2. **Properties** → *Add building* (values, CCA class), then add rental units.
+3. **Properties** → *Record income / expense* to post transactions (GST/QST handled automatically).
+4. **Documents** → upload files and tag each with a type (bank statement, utility bill, etc.),
+   optionally linked to a building. Statements, tax, forecast and advisory update automatically.
 
 ---
 
